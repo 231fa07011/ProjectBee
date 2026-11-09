@@ -10,10 +10,12 @@ import {
   Clock, 
   Star, 
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare
 } from 'lucide-react';
 import { useOrders } from '@/lib/store/orderStore';
 import { REVIEWS } from '@/lib/data/reviews';
+import { getOrderConfirmationWhatsAppUrl } from '@/lib/config';
 
 interface OrderConfirmationPageProps {
   params: {
@@ -69,11 +71,21 @@ export default function OrderConfirmationPage({ params }: OrderConfirmationPageP
 
   const currentStepIdx = getStepIndex(order.status);
 
+  const handleWhatsAppOrderPing = () => {
+    const itemNames = order.items.map((i) => `${i.quantity}x ${i.titleSnapshot}`).join(', ');
+    const url = getOrderConfirmationWhatsAppUrl(
+      order.orderNumber,
+      order.parentName,
+      order.totalPayablePaise / 100,
+      itemNames
+    );
+    window.open(url, '_blank');
+  };
+
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewText.trim()) return;
 
-    // Simulate verified review recording
     REVIEWS.unshift({
       id: `rev-${Date.now()}`,
       productId: order.items[0]?.productId || 'prod-001',
@@ -104,10 +116,21 @@ export default function OrderConfirmationPage({ params }: OrderConfirmationPageP
           Order Confirmed & Verified!
         </h1>
         <p className="text-xs sm:text-sm text-emerald-100 max-w-lg mx-auto">
-          Thank you, <strong className="text-white">{order.parentName}</strong>! Your Cash on Delivery order has been verified via WhatsApp. Our Bengaluru workshop has queued your model for calibration.
+          Thank you, <strong className="text-white">{order.parentName}</strong>! Your Cash on Delivery order has been verified. Our Bengaluru workshop has queued your model for calibration.
         </p>
-        <div className="inline-block bg-white text-ink-900 font-mono text-xs font-black px-4 py-1.5 rounded-full shadow-xs">
-          Order ID: {order.orderNumber}
+        
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="bg-white text-ink-900 font-mono text-xs font-black px-4 py-1.5 rounded-full shadow-xs">
+            Order ID: {order.orderNumber}
+          </div>
+
+          <button
+            onClick={handleWhatsAppOrderPing}
+            className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold text-xs px-4 py-1.5 rounded-full shadow-sm transition"
+          >
+            <MessageSquare className="w-3.5 h-3.5 fill-white" />
+            <span>Chat with us about this Order on WhatsApp</span>
+          </button>
         </div>
       </div>
 

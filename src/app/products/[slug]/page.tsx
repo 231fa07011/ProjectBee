@@ -16,11 +16,15 @@ import {
   HelpCircle, 
   ExternalLink,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  MessageSquare,
+  Heart
 } from 'lucide-react';
 import { PRODUCTS } from '@/lib/data/catalog';
 import { REVIEWS } from '@/lib/data/reviews';
 import { useCart } from '@/lib/store/cartStore';
+import { useWishlist } from '@/lib/store/wishlistStore';
+import { getProductInquiryWhatsAppUrl } from '@/lib/config';
 
 interface ProductDetailPageProps {
   params: {
@@ -38,6 +42,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   }
 
   const { addItem } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const isWishlisted = isInWishlist(product.id);
+
   const [selectedImage, setSelectedImage] = useState(product.images[0]);
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
@@ -71,24 +78,49 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     router.push('/checkout');
   };
 
-  const handleCheckPincode = (e: React.FormEvent) => {
+  const handleWhatsAppInquiry = () => {
+    const url = getProductInquiryWhatsAppUrl(
+      product.title,
+      product.sku,
+      product.sellingPricePaise / 100
+    );
+    window.open(url, '_blank');
+  };
+
+  const handleCheckPincode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pincode || pincode.length !== 6) {
       setPincodeStatus(null);
       return;
     }
-    if (pincode.startsWith('560')) {
-      setPincodeStatus({
-        isAvailable: true,
-        city: 'Bengaluru Express Zone',
-        days: '1–2 Days (Same Day Dispatch)'
-      });
-    } else {
-      setPincodeStatus({
-        isAvailable: true,
-        city: 'Pan-India Courier Zone',
-        days: '3–5 Days via Shiprocket Express'
-      });
+
+    try {
+      const res = await fetch(`/api/v1/catalog/pincodes/${pincode}`);
+      const json = await res.json();
+      if (json.success) {
+        setPincodeStatus({
+          isAvailable: json.data.isServiceable,
+          city: json.data.city,
+          days: `${json.data.minEstimatedDays}–${json.data.maxEstimatedDays} Business Days`
+        });
+      } else {
+        setPincodeStatus(null);
+      }
+    } catch {
+      // Fallback
+      if (pincode.startsWith('560')) {
+        setPincodeStatus({
+          isAvailable: true,
+          city: 'Bengaluru Express Zone',
+          days: '1–2 Days (Same Day Dispatch)'
+        });
+      } else {
+        setPincodeStatus({
+          isAvailable: true,
+          city: 'Pan-India Courier Zone',
+          days: '3–5 Days via Shiprocket Express'
+        });
+      }
     }
   };
 
@@ -119,6 +151,14 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             <div className="absolute top-4 left-4 bg-white/95 text-ink-900 px-3 py-1 rounded-full text-xs font-bold shadow-xs">
               ⚡ Pre-Assembled Model
             </div>
+
+            <button
+              onClick={() => toggleWishlist(product.id)}
+              className="absolute top-4 right-4 p-2.5 rounded-full bg-white/90 hover:bg-white text-slate-400 hover:text-rose-500 shadow-md transition"
+              aria-label="Save to wishlist"
+            >
+              <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-slate-600'}`} />
+            </button>
           </div>
 
           {/* Thumbnail list */}
@@ -218,22 +258,22 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             <p className="text-xs text-slate-500">
               Inclusive of all taxes. Free shipping on orders above ₹999.
             </p>
-            <div className="pt-2 flex items-center gap-4 text-xs font-semibold text-emerald-700">
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-semibold text-emerald-700">
               <div className="flex items-center gap-1">
                 <ShieldCheck className="w-4 h-4" />
                 <span>Cash on Delivery (COD) Supported</span>
               </div>
               <div className="flex items-center gap-1">
                 <Truck className="w-4 h-4" />
-                <span>Dispatches within 24 Hours</span>
+                <span>Dispatches within 24 Hours from Bengaluru</span>
               </div>
             </div>
           </div>
 
-          {/* Quantity & CTA Buttons */}
+          {/* Quantity & Actions: Add to Cart, Buy Now, and Real-Time WhatsApp Direct Chat */}
           <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center border border-slate-300 rounded-xl bg-white p-1">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="flex items-center border border-slate-300 rounded-xl bg-white p-1 w-full sm:w-auto justify-between">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="w-8 h-8 flex items-center justify-center font-bold text-slate-600 hover:bg-slate-100 rounded-lg"
@@ -251,7 +291,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
               <button
                 onClick={handleAddToCart}
-                className={`flex-1 py-3.5 px-6 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition ${
+                className={`w-full sm:flex-1 py-3.5 px-4 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition ${
                   justAdded
                     ? 'bg-emerald-600 text-white'
                     : 'bg-white border-2 border-ink-900 text-ink-900 hover:bg-slate-50'
@@ -263,11 +303,20 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
               <button
                 onClick={handleBuyNow}
-                className="flex-1 py-3.5 px-6 rounded-2xl text-xs font-extrabold bg-bee-500 hover:bg-bee-600 text-ink-900 shadow-md shadow-bee-500/20 transition text-center"
+                className="w-full sm:flex-1 py-3.5 px-4 rounded-2xl text-xs font-extrabold bg-bee-500 hover:bg-bee-600 text-ink-900 shadow-md shadow-bee-500/20 transition text-center"
               >
                 Buy Now (COD)
               </button>
             </div>
+
+            {/* Direct WhatsApp Ordering / Inquiry Action */}
+            <button
+              onClick={handleWhatsAppInquiry}
+              className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition"
+            >
+              <MessageSquare className="w-4 h-4 fill-white text-white" />
+              <span>Inquire & Order via WhatsApp (Instant Reply)</span>
+            </button>
           </div>
 
           {/* Delivery Pincode Checker */}
@@ -440,7 +489,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                       <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
                     ))}
                   </div>
-                  <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">
                     ✓ Verified Purchase
                   </span>
                 </div>

@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import WhatsAppWidget from "@/components/common/WhatsAppWidget";
 
 export const metadata: Metadata = {
-  title: "ProjectBee – School Projects Made Easy! | Working Science Models & DIY Kits",
-  description: "India's premier e-commerce platform for CBSE & ICSE school science exhibition models, working physics and biology projects, DIY kits, and viva preparation cards.",
+  title: "ProjectBee | School Projects & Working Science Models (Classes 1–12)",
+  description: "India's premier educational platform for CBSE, ICSE, and State Board school science exhibition working models, biology displays, robotics automation kits, and oral viva prompt cards.",
 };
 
 export default function RootLayout({
@@ -15,10 +16,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col justify-between">
+      <body className="min-h-screen flex flex-col justify-between antialiased">
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
+        <WhatsAppWidget />
       </body>
     </html>
   );

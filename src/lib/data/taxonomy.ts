@@ -36,3 +36,4 @@ export const PRODUCT_FORMATS: ProductFormat[] = [
   { id: 'science_fair_display', name: 'Science Fair Display', description: 'Polished display showcase model with concept headers and viva prompts.' },
   { id: 'chart_and_viva', name: 'Charts & Viva Cards', description: 'Infographic visual presentation boards and oral examination Q&A flashcards.' },
 ];
+

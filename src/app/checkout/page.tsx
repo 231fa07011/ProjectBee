@@ -369,13 +369,26 @@ export default function CheckoutPage() {
               </p>
             </div>
 
-            {/* Test Helper Notification */}
-            <div className="p-3 rounded-xl bg-bee-50 border border-bee-200 text-xs text-ink-900">
-              <span className="font-bold">🧪 Demo Passcode:</span> Use{' '}
-              <strong className="font-mono bg-bee-200 px-1.5 py-0.5 rounded cursor-pointer" onClick={() => setOtpCode('739102')}>
-                739102
-              </strong>{' '}
-              (Click to auto-fill)
+            {/* Test Helper Notification & Direct WhatsApp Action */}
+            <div className="p-3 rounded-xl bg-bee-50 border border-bee-200 text-xs text-ink-900 space-y-1.5">
+              <div>
+                <span className="font-bold">🧪 Instant Passcode:</span> Use{' '}
+                <strong className="font-mono bg-bee-200 px-1.5 py-0.5 rounded cursor-pointer" onClick={() => setOtpCode('739102')}>
+                  739102
+                </strong>{' '}
+                (Click to auto-fill)
+              </div>
+              <div className="text-[11px] text-slate-600">
+                Or send confirmation directly via WhatsApp app:
+                <a
+                  href={`https://wa.me/919845012345?text=Hello%20ProjectBee!%20Please%20verify%20my%20COD%20Order%20for%20parent%20${encodeURIComponent(parentName)}%20(Phone:%20${parentWhatsapp})`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1 text-emerald-700 font-bold hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Open WhatsApp Direct Chat →</span>
+                </a>
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -423,3 +436,4 @@ export default function CheckoutPage() {
     </div>
   );
 }
+

@@ -23,10 +23,20 @@ import { useOrders } from '@/lib/store/orderStore';
 import { PRODUCTS } from '@/lib/data/catalog';
 import { REVIEWS } from '@/lib/data/reviews';
 import { OrderStatus } from '@/types';
+import { 
+  getActiveWhatsAppNumber, 
+  saveActiveWhatsAppNumber, 
+  getWhatsAppChatUrl,
+  STORE_CONFIG 
+} from '@/lib/config';
 
 export default function DashboardPage() {
   const { orders, updateOrderStatus } = useOrders();
   const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'reviews' | 'superadmin'>('orders');
+
+  // WhatsApp configuration state
+  const [whatsappInput, setWhatsappInput] = useState(() => getActiveWhatsAppNumber());
+  const [whatsappSavedMessage, setWhatsappSavedMessage] = useState(false);
 
   // Filter state for orders
   const [orderStatusFilter, setOrderStatusFilter] = useState('all');
@@ -488,6 +498,100 @@ export default function DashboardPage() {
             </p>
           </div>
 
+          {/* WhatsApp Real-Time Integration Settings */}
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">💬</span>
+                <div>
+                  <h3 className="font-bold text-sm text-ink-900">Real-Time WhatsApp Integration & Support Number</h3>
+                  <p className="text-[11px] text-slate-500">
+                    Connected to floating customer chat, order notifications, and COD WhatsApp verification.
+                  </p>
+                </div>
+              </div>
+              <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-md">
+                Active & Live
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-2">
+                <label className="font-bold text-slate-700 block">
+                  Store Owner WhatsApp Number (Country Code + Phone)
+                </label>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-300 bg-slate-50 text-slate-600 font-bold">
+                    +
+                  </span>
+                  <input
+                    type="text"
+                    value={whatsappInput}
+                    onChange={(e) => setWhatsappInput(e.target.value)}
+                    placeholder="e.g. 919876543210"
+                    className="w-full px-3.5 py-2.5 rounded-r-xl border border-slate-300 focus:border-bee-500 font-mono text-xs"
+                  />
+                </div>
+                
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!whatsappInput.trim()) return;
+                      saveActiveWhatsAppNumber(whatsappInput);
+                      setWhatsappSavedMessage(true);
+                      setTimeout(() => setWhatsappSavedMessage(false), 2500);
+                    }}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-xs flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Save & Activate Storewide</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = getWhatsAppChatUrl(
+                        "Hello ProjectBee! This is a test message from my store dashboard.",
+                        whatsappInput
+                      );
+                      window.open(url, '_blank');
+                    }}
+                    className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs transition flex items-center gap-1"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    <span>Test My WhatsApp</span>
+                  </button>
+                </div>
+
+                {whatsappSavedMessage && (
+                  <p className="text-[11px] font-bold text-emerald-600 animate-in fade-in">
+                    ✓ WhatsApp number updated storewide! Floating chat, product inquiry, and order confirmations will route here immediately.
+                  </p>
+                )}
+
+                <span className="text-[10px] text-slate-400 block pt-1">
+                  Persistent in your browser session. For permanent production deployment, also set <code>NEXT_PUBLIC_WHATSAPP_NUMBER={whatsappInput}</code> in <code>.env.local</code>.
+                </span>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">
+                  WhatsApp Messaging Gateway Mode
+                </label>
+                <select className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-bee-500 bg-white font-medium">
+                  <option value="direct">Direct WhatsApp Click-to-Chat (wa.me) - Active</option>
+                  <option value="twilio">Twilio WhatsApp Business API</option>
+                  <option value="msg91">Msg91 WhatsApp Gateway</option>
+                  <option value="meta">Meta Cloud API (Official)</option>
+                </select>
+                <span className="text-[10px] text-slate-400 mt-2 block leading-relaxed">
+                  Dispatches one-click pre-filled chat messages with order details, SKU inquiries, and real-time customer support queries directly to your personal or business WhatsApp.
+                </span>
+              </div>
+            </div>
+          </div>
+
           {/* Feature Toggles */}
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
             <h3 className="font-bold text-sm text-ink-900 flex items-center gap-2">
@@ -650,3 +754,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

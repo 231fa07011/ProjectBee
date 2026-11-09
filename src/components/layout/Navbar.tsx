@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cartStore';
 import { CLASSES, BOARDS } from '@/lib/data/taxonomy';
+import { STORE_CONFIG } from '@/lib/config';
 
 export default function Navbar() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function Navbar() {
             <span>Pre-assembled working models & exhibition kits • Cash on Delivery across India</span>
           </div>
           <div className="hidden md:flex items-center gap-4 text-[11px]">
-            <span>📞 Support: +91 80 4000 0000</span>
+            <span>📞 Support: {STORE_CONFIG.supportPhone}</span>
             <Link href="/dashboard" className="underline hover:text-white transition">
               Admin & Super Admin Portal
             </Link>
@@ -62,7 +63,7 @@ export default function Navbar() {
               </span>
             </div>
             <p className="text-[10px] font-semibold text-slate-500 tracking-wider uppercase">
-              School Projects Made Easy!
+              School Projects & Science Working Models
             </p>
           </div>
         </Link>

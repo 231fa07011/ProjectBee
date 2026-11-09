@@ -83,6 +83,7 @@ export default function Footer() {
             <li><Link href="/catalog?subject=environmental-science" className="hover:text-bee-400 transition">EVS & Green Energy Models</Link></li>
             <li><Link href="/catalog?subject=robotics-ai" className="hover:text-bee-400 transition">Robotics & Sensor Projects</Link></li>
             <li><Link href="/catalog?subject=chemistry" className="hover:text-bee-400 transition">Chemistry Demonstration Kits</Link></li>
+            <li><Link href="/catalog?subject=mathematics" className="hover:text-bee-400 transition">Mathematics 3D Models</Link></li>
           </ul>
         </div>
 
@@ -114,3 +115,4 @@ export default function Footer() {
     </footer>
   );
 }
+

@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Star, ShoppingBag, Check } from 'lucide-react';
+import { Star, ShoppingBag, Check, Heart } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/lib/store/cartStore';
+import { useWishlist } from '@/lib/store/wishlistStore';
 
 interface ProductCardProps {
   product: Product;
@@ -13,8 +14,10 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [justAdded, setJustAdded] = useState(false);
 
+  const isFavorited = isInWishlist(product.id);
   const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0];
   const discountPercent = Math.round(
     ((product.mrpPaise - product.sellingPricePaise) / product.mrpPaise) * 100
@@ -25,6 +28,12 @@ export default function ProductCard({ product }: ProductCardProps) {
     addItem(product, 1);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1500);
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWishlist(product.id);
   };
 
   return (
@@ -52,6 +61,19 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
         </div>
+
+        {/* Heart / Wishlist Toggle */}
+        <button
+          onClick={handleToggleFavorite}
+          aria-label={isFavorited ? 'Remove from wishlist' : 'Save to wishlist'}
+          className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white text-slate-400 hover:text-rose-500 shadow-xs backdrop-blur-xs transition"
+        >
+          <Heart
+            className={`w-4 h-4 ${
+              isFavorited ? 'fill-rose-500 text-rose-500' : 'text-slate-600'
+            }`}
+          />
+        </button>
 
         {/* Free viva card badge */}
         <div className="absolute bottom-2 right-2 bg-ink-900/80 text-white text-[9px] font-semibold px-2 py-0.5 rounded backdrop-blur-xs">

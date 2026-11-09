@@ -73,3 +73,4 @@ INSERT INTO feature_flags (key, is_enabled, description) VALUES
   ('verified_reviews', true, 'Enable verified purchase ratings and reviews on product pages'),
   ('external_video_embeds', true, 'Show YouTube and Instagram demonstration videos on product details')
 ON CONFLICT (key) DO NOTHING;
+

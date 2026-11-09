@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState, useMemo, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import ProductCard from '@/components/catalog/ProductCard';
 import FilterSidebar from '@/components/catalog/FilterSidebar';
 import { PRODUCTS } from '@/lib/data/catalog';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { CLASSES, SUBJECTS } from '@/lib/data/taxonomy';
+import { Search, SlidersHorizontal, X, GraduationCap, Sparkles } from 'lucide-react';
 
 function CatalogContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const initialSearch = searchParams.get('q') || '';
@@ -23,6 +25,46 @@ function CatalogContent() {
   const [selectedFormat, setSelectedFormat] = useState(initialFormat);
   const [sortBy, setSortBy] = useState('popular');
   const [showMobileFilter, setShowMobileFilter] = useState(false);
+
+  // Sync state whenever URL query params change (e.g. clicking Grade from navbar or home)
+  React.useEffect(() => {
+    setSearchQuery(searchParams.get('q') || '');
+    const g = searchParams.get('grade');
+    setSelectedGrade(g ? Number(g) : null);
+    setSelectedBoard(searchParams.get('board') || '');
+    setSelectedSubject(searchParams.get('subject') || '');
+    setSelectedFormat(searchParams.get('format') || '');
+  }, [searchParams]);
+
+  // Update URL helper
+  const updateUrlParam = (param: string, value: string | number | null) => {
+    const params = new URLSearchParams(window.location.search);
+    if (value === null || value === '') {
+      params.delete(param);
+    } else {
+      params.set(param, String(value));
+    }
+    router.replace(`/catalog?${params.toString()}`, { scroll: false });
+  };
+
+  const handleGradeSelect = (grade: number | null) => {
+    setSelectedGrade(grade);
+    updateUrlParam('grade', grade);
+  };
+
+  const handleSubjectSelect = (subj: string) => {
+    setSelectedSubject(subj);
+    updateUrlParam('subject', subj || null);
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedBoard('');
+    setSelectedGrade(null);
+    setSelectedSubject('');
+    setSelectedFormat('');
+    router.replace('/catalog', { scroll: false });
+  };
 
   const filteredProducts = useMemo(() => {
     return PRODUCTS.filter((product) => {
@@ -67,21 +109,27 @@ function CatalogContent() {
     });
   }, [searchQuery, selectedBoard, selectedGrade, selectedSubject, selectedFormat, sortBy]);
 
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setSelectedBoard('');
-    setSelectedGrade(null);
-    setSelectedSubject('');
-    setSelectedFormat('');
-  };
+  const hasActiveFilters = Boolean(
+    searchQuery || selectedBoard || selectedGrade !== null || selectedSubject || selectedFormat
+  );
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Header and Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-ink-900">
-            School Projects & Science Working Models
+          <h1 className="text-2xl sm:text-3xl font-black text-ink-900 flex items-center gap-2">
+            <span>School Projects & Science Working Models</span>
+            {selectedGrade && (
+              <span className="text-xs font-black bg-bee-500 text-ink-900 px-3 py-1 rounded-full">
+                Grade {selectedGrade}
+              </span>
+            )}
+            {selectedSubject && (
+              <span className="text-xs font-black bg-ink-900 text-white px-3 py-1 rounded-full capitalize">
+                {selectedSubject.replace('-', ' ')}
+              </span>
+            )}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
             Displaying {filteredProducts.length} verified project models ready for immediate dispatch from Bengaluru.
@@ -92,7 +140,7 @@ function CatalogContent() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowMobileFilter(!showMobileFilter)}
-            className="lg:hidden flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-white border border-slate-200 rounded-xl"
+            className="lg:hidden flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-white border border-slate-200 rounded-xl shadow-xs"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Filters</span>
@@ -101,7 +149,7 @@ function CatalogContent() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2 text-xs font-bold bg-white border border-slate-200 rounded-xl text-slate-700 outline-hidden focus:border-bee-500"
+            className="px-3 py-2 text-xs font-bold bg-white border border-slate-200 rounded-xl text-slate-700 outline-hidden focus:border-bee-500 shadow-xs"
           >
             <option value="popular">Sort by: Popularity</option>
             <option value="price_asc">Price: Low to High</option>
@@ -111,6 +159,138 @@ function CatalogContent() {
         </div>
       </div>
 
+      {/* QUICK HORIZONTAL GRADE SELECTOR STRIP (Class 1 to 12) */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-2">
+        <div className="flex items-center justify-between text-xs font-bold text-ink-900">
+          <span className="flex items-center gap-1.5">
+            <GraduationCap className="w-4 h-4 text-bee-600" />
+            <span>Filter by Class:</span>
+          </span>
+          {selectedGrade !== null && (
+            <button
+              onClick={() => handleGradeSelect(null)}
+              className="text-[11px] text-rose-600 hover:underline font-semibold flex items-center gap-0.5"
+            >
+              <X className="w-3 h-3" />
+              <span>Show All Classes</span>
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+          <button
+            onClick={() => handleGradeSelect(null)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition ${
+              selectedGrade === null
+                ? 'bg-ink-900 text-white shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+            }`}
+          >
+            All Classes ({PRODUCTS.length})
+          </button>
+
+          {CLASSES.map((c) => {
+            const countForGrade = PRODUCTS.filter((p) => p.classes.includes(c.grade)).length;
+            const isSelected = selectedGrade === c.grade;
+
+            return (
+              <button
+                key={c.grade}
+                onClick={() => handleGradeSelect(isSelected ? null : c.grade)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition flex items-center gap-1.5 border ${
+                  isSelected
+                    ? 'bg-bee-500 border-bee-600 text-ink-900 shadow-xs'
+                    : 'border-slate-200 bg-white hover:bg-bee-50/80 text-slate-700 hover:border-bee-300'
+                }`}
+              >
+                <span>Grade {c.grade}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                  isSelected ? 'bg-white/80 text-ink-900' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {countForGrade}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* QUICK HORIZONTAL SUBJECT SELECTOR STRIP */}
+      <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2 overflow-x-auto scrollbar-thin">
+        <span className="text-xs font-bold text-slate-500 shrink-0 pl-1">Subject:</span>
+        <button
+          onClick={() => handleSubjectSelect('')}
+          className={`px-3 py-1 rounded-xl text-xs font-bold shrink-0 transition ${
+            !selectedSubject
+              ? 'bg-ink-900 text-white shadow-xs'
+              : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+          }`}
+        >
+          All ({PRODUCTS.length})
+        </button>
+
+        {SUBJECTS.map((s) => {
+          const countForSubject = PRODUCTS.filter((p) => p.subjects.includes(s.id)).length;
+          const isSelected = selectedSubject === s.id;
+
+          return (
+            <button
+              key={s.id}
+              onClick={() => handleSubjectSelect(isSelected ? '' : s.id)}
+              className={`px-3 py-1 rounded-xl text-xs font-bold shrink-0 transition flex items-center gap-1.5 border ${
+                isSelected
+                  ? 'bg-bee-500 border-bee-600 text-ink-900 shadow-xs'
+                  : 'border-slate-200 bg-white hover:bg-bee-50/80 text-slate-700 hover:border-bee-300'
+              }`}
+            >
+              <span>{s.name}</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                isSelected ? 'bg-white/80 text-ink-900' : 'bg-slate-100 text-slate-500'
+              }`}>
+                {countForSubject}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Active Filter Tags */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-400 font-semibold">Active filters:</span>
+          {selectedGrade !== null && (
+            <span className="inline-flex items-center gap-1 bg-bee-100 text-bee-900 px-2.5 py-1 rounded-lg font-bold">
+              Grade {selectedGrade}
+              <button onClick={() => handleGradeSelect(null)} className="hover:text-red-600">✕</button>
+            </span>
+          )}
+          {selectedSubject && (
+            <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-900 px-2.5 py-1 rounded-lg font-bold capitalize">
+              {selectedSubject.replace('-', ' ')}
+              <button onClick={() => handleSubjectSelect('')} className="hover:text-red-600">✕</button>
+            </span>
+          )}
+          {selectedBoard && (
+            <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-900 px-2.5 py-1 rounded-lg font-bold">
+              Board: {selectedBoard}
+              <button onClick={() => setSelectedBoard('')} className="hover:text-red-600">✕</button>
+            </span>
+          )}
+          {searchQuery && (
+            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-800 px-2.5 py-1 rounded-lg font-bold">
+              Search: "{searchQuery}"
+              <button onClick={() => setSearchQuery('')} className="hover:text-red-600">✕</button>
+            </span>
+          )}
+          <button
+            onClick={handleClearFilters}
+            className="text-xs text-rose-600 hover:underline font-bold ml-2"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+
       {/* Main Grid with Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         {/* Desktop Sidebar */}
@@ -119,9 +299,9 @@ function CatalogContent() {
             selectedBoard={selectedBoard}
             setSelectedBoard={setSelectedBoard}
             selectedGrade={selectedGrade}
-            setSelectedGrade={setSelectedGrade}
+            setSelectedGrade={handleGradeSelect}
             selectedSubject={selectedSubject}
-            setSelectedSubject={setSelectedSubject}
+            setSelectedSubject={handleSubjectSelect}
             selectedFormat={selectedFormat}
             setSelectedFormat={setSelectedFormat}
             onClearFilters={handleClearFilters}
@@ -145,9 +325,9 @@ function CatalogContent() {
                 selectedBoard={selectedBoard}
                 setSelectedBoard={setSelectedBoard}
                 selectedGrade={selectedGrade}
-                setSelectedGrade={setSelectedGrade}
+                setSelectedGrade={handleGradeSelect}
                 selectedSubject={selectedSubject}
-                setSelectedSubject={setSelectedSubject}
+                setSelectedSubject={handleSubjectSelect}
                 selectedFormat={selectedFormat}
                 setSelectedFormat={setSelectedFormat}
                 onClearFilters={handleClearFilters}
@@ -164,7 +344,7 @@ function CatalogContent() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by topic, law or keyword (e.g. Pascal, Solar, Circuit, Heart)..."
+              placeholder="Search by topic, law or keyword (e.g. Pascal, Solar, Circuit, Heart, Newton, Abacus)..."
               className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl border border-slate-200 focus:border-bee-500 focus:ring-2 focus:ring-bee-500/20 outline-hidden bg-white shadow-xs"
             />
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />

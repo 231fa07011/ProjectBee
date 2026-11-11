@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '@/lib/store/cartStore';
 import { useOrders } from '@/lib/store/orderStore';
+import { getActiveWhatsAppNumber } from '@/lib/config';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -381,7 +382,7 @@ export default function CheckoutPage() {
               <div className="text-[11px] text-slate-600">
                 Or send confirmation directly via WhatsApp app:
                 <a
-                  href={`https://wa.me/919845012345?text=Hello%20ProjectBee!%20Please%20verify%20my%20COD%20Order%20for%20parent%20${encodeURIComponent(parentName)}%20(Phone:%20${parentWhatsapp})`}
+                  href={`https://wa.me/${getActiveWhatsAppNumber()}?text=Hello%20ProjectBee!%20Please%20verify%20my%20COD%20Order%20for%20parent%20${encodeURIComponent(parentName)}%20(Phone:%20${parentWhatsapp})`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ml-1 text-emerald-700 font-bold hover:underline inline-flex items-center gap-1"

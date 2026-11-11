@@ -7,8 +7,8 @@ export const STORE_CONFIG = {
   name: 'ProjectBee',
   // Default WhatsApp number (fallback). Can be overridden via NEXT_PUBLIC_WHATSAPP_NUMBER in .env.local
   // or dynamically updated by the store owner in the browser.
-  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919845012345',
-  supportPhone: '+91 80 4000 0000',
+  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '917331102982',
+  supportPhone: '+91 73311 02982',
   supportEmail: 'help@projectbee.in',
   dispatchHub: 'Koramangala 4th Block, Bengaluru, Karnataka 560034',
   currency: 'INR',
@@ -28,7 +28,7 @@ export function getActiveWhatsAppNumber(): string {
       return saved.replace(/\D/g, '');
     }
   }
-  return (STORE_CONFIG.whatsappNumber || '919845012345').replace(/\D/g, '');
+  return (STORE_CONFIG.whatsappNumber || '917331102982').replace(/\D/g, '');
 }
 
 /**

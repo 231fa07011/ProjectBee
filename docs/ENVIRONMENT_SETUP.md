@@ -117,3 +117,4 @@ Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 3. Under **Project Settings > Environment Variables**, add the production keys defined in Section 2.
 4. Click **Deploy**. Vercel will automatically build the Next.js App Router application and propagate it globally across edge nodes.
 5. In Cloudflare or your DNS registrar, add CNAME records pointing `projectbee.in` to `cname.vercel-dns.com`.
+

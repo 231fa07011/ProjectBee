@@ -448,13 +448,13 @@ export default function HomePage() {
                   "{review.title}"
                 </h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  {review.body}
+                  {review.reviewText}
                 </p>
               </div>
 
               <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                 <div className="font-semibold text-ink-900">
-                  {review.authorName} • Class {review.studentGrade} {review.board}
+                  {review.reviewerDisplayName}
                 </div>
                 <div className="flex items-center gap-1 text-emerald-600 font-bold">
                   <ShieldCheck className="w-3.5 h-3.5" />

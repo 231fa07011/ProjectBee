@@ -27,61 +27,41 @@ import { PRODUCTS } from '@/lib/data/catalog';
 import { CLASSES } from '@/lib/data/taxonomy';
 import { REVIEWS } from '@/lib/data/reviews';
 
-const HERO_SLIDES = [
+const HERO_SLIDE_CONFIGS = [
   {
-    id: 1,
-    title: "Working Hydraulic Lift & Scissor Platform",
-    subject: "Class 6–10 Physics",
-    badge: "🏆 Exhibition Best Seller",
+    slug: 'working-hydraulic-lift-model',
+    badge: '🏆 #1 Best Seller in Physics',
     tag: "Pascal's Principle",
-    slug: "working-hydraulic-lift-model",
-    price: "₹649",
-    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
-    thumbLabel: "Hydraulic Lift",
+    thumbLabel: 'Hydraulic Lift',
+    customImage: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
   },
   {
-    id: 2,
-    title: "Autonomous Obstacle-Avoiding Robot Rover",
-    subject: "Class 7–12 Robotics & AI",
-    badge: "🤖 Arduino Sensor Kit",
-    tag: "Ultrasonic Sonar",
-    slug: "obstacle-avoiding-ultrasonic-robot-car",
-    price: "₹999",
-    imageUrl: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80",
-    thumbLabel: "Robotics Car",
+    slug: 'obstacle-avoiding-ultrasonic-robot-car',
+    badge: '🤖 #1 Best Seller in Robotics',
+    tag: 'Ultrasonic Sonar',
+    thumbLabel: 'Robotics Car',
+    customImage: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80',
   },
   {
-    id: 3,
-    title: "Reflex Arc & Neural Pathway Circuit Board",
-    subject: "Class 9–12 Biology",
-    badge: "🧬 Interactive LED Board",
-    tag: "Nervous System",
-    slug: "reflex-arc-neural-pathway-working-led-circuit",
-    price: "₹1,299",
-    imageUrl: "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80",
-    thumbLabel: "Reflex Arc",
+    slug: 'reflex-arc-neural-pathway-working-led-circuit',
+    badge: '🧬 Senior Biology Best Seller',
+    tag: 'Nervous System',
+    thumbLabel: 'Reflex Arc',
+    customImage: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80',
   },
   {
-    id: 4,
-    title: "Chemical Density Tower 7-Layer Column",
-    subject: "Class 2–7 Chemistry",
-    badge: "🧪 Rainbow Density Lab",
-    tag: "Archimedes Principle",
-    slug: "chemical-density-tower-miscibility-column",
-    price: "₹399",
-    imageUrl: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80",
-    thumbLabel: "Density Lab",
+    slug: 'chemical-density-tower-miscibility-column',
+    badge: '🧪 Chemistry Exhibition Special',
+    tag: 'Archimedes Principle',
+    thumbLabel: 'Density Lab',
+    customImage: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80',
   },
   {
-    id: 5,
-    title: "Kaleidoscope Multiple Reflection Optical Tube",
-    subject: "Class 1–6 Optics & Math",
-    badge: "✨ 60° Hexagonal Symmetry",
-    tag: "Plane Mirrors",
-    slug: "kaleidoscope-multiple-reflection-optical-tube",
-    price: "₹349",
-    imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80",
-    thumbLabel: "Kaleidoscope",
+    slug: 'kaleidoscope-multiple-reflection-optical-tube',
+    badge: '✨ Junior Optics Best Seller',
+    tag: 'Plane Mirrors',
+    thumbLabel: 'Kaleidoscope',
+    customImage: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80',
   },
 ];
 
@@ -90,13 +70,34 @@ export default function HomePage() {
   const [activeGrade, setActiveGrade] = useState<number>(7);
   const [currentSlide, setCurrentSlide] = useState<number>(0);
 
+  // Dynamic slides linked to real-time PRODUCTS catalog data
+  const heroSlides = React.useMemo(() => {
+    return HERO_SLIDE_CONFIGS.map((cfg, index) => {
+      const prod = PRODUCTS.find((p) => p.slug === cfg.slug);
+      return {
+        id: index + 1,
+        slug: cfg.slug,
+        title: prod?.title || 'Science Working Model',
+        subject: prod ? `Class ${prod.classes.join(', ')} • ${prod.subjects.join(' & ').toUpperCase()}` : 'Science Fair',
+        badge: cfg.badge,
+        tag: cfg.tag,
+        thumbLabel: cfg.thumbLabel,
+        price: prod ? `₹${(prod.sellingPricePaise / 100).toLocaleString('en-IN')}` : '₹499',
+        mrp: prod ? `₹${(prod.mrpPaise / 100).toLocaleString('en-IN')}` : '₹899',
+        stockOnHand: prod?.stockOnHand ?? 25,
+        isPopular: prod?.isPopular ?? true,
+        imageUrl: cfg.customImage,
+      };
+    });
+  }, []);
+
   // Auto-advance hero slides every 4.5 seconds
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 4500);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroSlides.length]);
 
   const featuredProducts = PRODUCTS.filter((p) => p.isFeatured).slice(0, 8);
   
@@ -112,14 +113,14 @@ export default function HomePage() {
   };
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   };
 
-  const activeHero = HERO_SLIDES[currentSlide];
+  const activeHero = heroSlides[currentSlide] || heroSlides[0];
 
   return (
     <div className="space-y-16 pb-12">
@@ -200,14 +201,28 @@ export default function HomePage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent pointer-events-none" />
                     
-                    {/* Top Floating Badge */}
-                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-black text-ink-900 shadow-md flex items-center gap-1.5 border border-amber-200">
+                    {/* Top Floating Badge (Best Seller & Category) */}
+                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-black text-ink-900 shadow-md flex items-center gap-1.5 border border-amber-300">
                       <span>{activeHero.badge}</span>
                     </div>
 
-                    <div className="absolute top-3 right-3 bg-emerald-600 text-white px-2.5 py-1 rounded-full text-[10px] font-black shadow-md flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                      <span>{activeHero.price} • In Stock</span>
+                    {/* Top Right Live Stock Status Badge */}
+                    <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
+                      <div className={`px-2.5 py-1 rounded-full text-[10px] font-black shadow-md flex items-center gap-1.5 backdrop-blur-md ${
+                        activeHero.stockOnHand <= 25 
+                          ? 'bg-rose-600/95 text-white animate-pulse ring-2 ring-rose-400' 
+                          : 'bg-emerald-600/95 text-white'
+                      }`}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                        <span>
+                          {activeHero.stockOnHand <= 25 
+                            ? `⚡ Only ${activeHero.stockOnHand} Left in Stock!` 
+                            : `✓ In Stock (${activeHero.stockOnHand} Units)`}
+                        </span>
+                      </div>
+                      <span className="text-[9px] font-extrabold text-amber-200 bg-black/70 px-2 py-0.5 rounded-md backdrop-blur-xs shadow-xs">
+                        {activeHero.price} <span className="line-through text-slate-400 font-normal text-[8px]">{activeHero.mrp}</span>
+                      </span>
                     </div>
 
                     {/* Prev / Next Navigation Arrows */}
@@ -237,15 +252,15 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  {/* 5-IMAGE THUMBNAIL SELECTOR STRIP */}
+                  {/* 5-IMAGE THUMBNAIL SELECTOR STRIP (WITH LIVE STOCK & BEST SELLER BADGES) */}
                   <div className="space-y-1.5 pt-0.5">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-extrabold text-slate-700 flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-bee-600" />
-                        <span>Featured Working Models ({HERO_SLIDES.length} Exhibits):</span>
+                      <span className="font-extrabold text-slate-700 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Live Stock & Best Sellers ({heroSlides.length} Exhibits):</span>
                       </span>
                       <div className="flex gap-1 items-center">
-                        {HERO_SLIDES.map((_, idx) => (
+                        {heroSlides.map((_, idx) => (
                           <span
                             key={idx}
                             onClick={() => setCurrentSlide(idx)}
@@ -258,16 +273,17 @@ export default function HomePage() {
                     </div>
 
                     <div className="grid grid-cols-5 gap-1.5">
-                      {HERO_SLIDES.map((slide, idx) => {
+                      {heroSlides.map((slide, idx) => {
                         const isCurrent = currentSlide === idx;
                         return (
                           <button
                             key={slide.id}
                             onClick={() => setCurrentSlide(idx)}
+                            title={`${slide.title} • ${slide.stockOnHand} left • Click to view`}
                             className={`group relative rounded-xl overflow-hidden border-2 transition-all p-0.5 flex flex-col items-center text-center ${
                               isCurrent
                                 ? 'border-bee-500 shadow-md scale-105 bg-bee-50 ring-2 ring-bee-400/50'
-                                : 'border-slate-200 hover:border-bee-300 bg-white hover:scale-102 opacity-75 hover:opacity-100'
+                                : 'border-slate-200 hover:border-bee-300 bg-white hover:scale-102 opacity-80 hover:opacity-100'
                             }`}
                           >
                             <div className="h-10 w-full rounded-lg overflow-hidden bg-slate-100 relative">
@@ -276,6 +292,18 @@ export default function HomePage() {
                                 alt={slide.thumbLabel}
                                 className="w-full h-full object-cover"
                               />
+                              {/* Best Seller Trophy Tag on Thumbnail */}
+                              {slide.isPopular && (
+                                <span className="absolute top-0.5 left-0.5 text-[8px] bg-amber-400 text-ink-900 px-1 py-0.2 rounded font-black leading-none shadow-xs">
+                                  🏆
+                                </span>
+                              )}
+                              {/* Stock Badge on Thumbnail */}
+                              <span className={`absolute bottom-0.5 right-0.5 text-[7px] px-1 py-0.2 rounded font-extrabold leading-none text-white ${
+                                slide.stockOnHand <= 25 ? 'bg-rose-600' : 'bg-emerald-600'
+                              }`}>
+                                {slide.stockOnHand} left
+                              </span>
                             </div>
                             <span className={`text-[9px] font-bold truncate w-full px-0.5 pt-0.5 leading-tight ${
                               isCurrent ? 'text-ink-900 font-extrabold' : 'text-slate-500'

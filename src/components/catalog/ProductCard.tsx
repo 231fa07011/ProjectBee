@@ -50,14 +50,34 @@ export default function ProductCard({ product }: ProductCardProps) {
           />
         )}
 
-        {/* Format Badge */}
-        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+        {/* Format & Best Seller Badges */}
+        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
+          {product.isPopular && (
+            <span className="px-2.5 py-1 rounded-md text-[10px] font-black bg-amber-400 text-ink-900 shadow-md flex items-center gap-1">
+              <span>🏆 Best Seller</span>
+            </span>
+          )}
           <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-white/95 text-ink-900 shadow-xs backdrop-blur-xs">
             {product.formatId === 'working_model' ? '⚡ Working Model' : '🏆 Science Display'}
           </span>
           {discountPercent > 0 && (
             <span className="px-2 py-1 rounded-md text-[10px] font-bold bg-bee-500 text-ink-900 shadow-xs">
               {discountPercent}% OFF
+            </span>
+          )}
+        </div>
+
+        {/* Live Stock Status Overlay */}
+        <div className="absolute bottom-2 left-2 z-10">
+          {product.stockOnHand <= 25 ? (
+            <span className="bg-rose-600/90 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-xs backdrop-blur-xs flex items-center gap-1 animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+              <span>Only {product.stockOnHand} left!</span>
+            </span>
+          ) : (
+            <span className="bg-emerald-600/90 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-xs backdrop-blur-xs flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+              <span>In Stock ({product.stockOnHand} units)</span>
             </span>
           )}
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -18,16 +18,85 @@ import {
   Star,
   BookOpen,
   HelpCircle,
-  Eye
+  Eye,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import ProductCard from '@/components/catalog/ProductCard';
 import { PRODUCTS } from '@/lib/data/catalog';
 import { CLASSES } from '@/lib/data/taxonomy';
 import { REVIEWS } from '@/lib/data/reviews';
 
+const HERO_SLIDES = [
+  {
+    id: 1,
+    title: "Working Hydraulic Lift & Scissor Platform",
+    subject: "Class 6–10 Physics",
+    badge: "🏆 Exhibition Best Seller",
+    tag: "Pascal's Principle",
+    slug: "working-hydraulic-lift-model",
+    price: "₹649",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+    thumbLabel: "Hydraulic Lift",
+  },
+  {
+    id: 2,
+    title: "Autonomous Obstacle-Avoiding Robot Rover",
+    subject: "Class 7–12 Robotics & AI",
+    badge: "🤖 Arduino Sensor Kit",
+    tag: "Ultrasonic Sonar",
+    slug: "obstacle-avoiding-ultrasonic-robot-car",
+    price: "₹999",
+    imageUrl: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80",
+    thumbLabel: "Robotics Car",
+  },
+  {
+    id: 3,
+    title: "Reflex Arc & Neural Pathway Circuit Board",
+    subject: "Class 9–12 Biology",
+    badge: "🧬 Interactive LED Board",
+    tag: "Nervous System",
+    slug: "reflex-arc-neural-pathway-working-led-circuit",
+    price: "₹1,299",
+    imageUrl: "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80",
+    thumbLabel: "Reflex Arc",
+  },
+  {
+    id: 4,
+    title: "Chemical Density Tower 7-Layer Column",
+    subject: "Class 2–7 Chemistry",
+    badge: "🧪 Rainbow Density Lab",
+    tag: "Archimedes Principle",
+    slug: "chemical-density-tower-miscibility-column",
+    price: "₹399",
+    imageUrl: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80",
+    thumbLabel: "Density Lab",
+  },
+  {
+    id: 5,
+    title: "Kaleidoscope Multiple Reflection Optical Tube",
+    subject: "Class 1–6 Optics & Math",
+    badge: "✨ 60° Hexagonal Symmetry",
+    tag: "Plane Mirrors",
+    slug: "kaleidoscope-multiple-reflection-optical-tube",
+    price: "₹349",
+    imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80",
+    thumbLabel: "Kaleidoscope",
+  },
+];
+
 export default function HomePage() {
   const router = useRouter();
   const [activeGrade, setActiveGrade] = useState<number>(7);
+  const [currentSlide, setCurrentSlide] = useState<number>(0);
+
+  // Auto-advance hero slides every 4.5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
 
   const featuredProducts = PRODUCTS.filter((p) => p.isFeatured).slice(0, 8);
   
@@ -41,6 +110,16 @@ export default function HomePage() {
   const handleOpenGradeCatalog = (grade: number) => {
     router.push(`/catalog?grade=${grade}`);
   };
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+  };
+
+  const activeHero = HERO_SLIDES[currentSlide];
 
   return (
     <div className="space-y-16 pb-12">
@@ -103,7 +182,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Hero Visual Showcase Card */}
+            {/* Right Hero Visual Showcase Card (Interactive 5-Image Gallery) */}
             <div className="lg:col-span-5 relative">
               <div className="relative mx-auto max-w-md lg:max-w-none">
                 {/* Glow backdrop */}
@@ -111,55 +190,106 @@ export default function HomePage() {
 
                 {/* Main Card */}
                 <div className="relative rounded-3xl bg-white border border-amber-200/90 shadow-2xl overflow-hidden p-4 space-y-3.5">
-                  {/* Image container with badges */}
+                  {/* Image container with badges & arrows */}
                   <div className="relative h-64 sm:h-72 w-full rounded-2xl overflow-hidden bg-slate-100 group">
                     <img
-                      src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1000&q=80"
-                      alt="School Science Working Model Exhibition"
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition duration-500"
+                      src={activeHero.imageUrl}
+                      alt={activeHero.title}
+                      key={activeHero.id}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-all duration-700 animate-in fade-in"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent pointer-events-none" />
                     
                     {/* Top Floating Badge */}
                     <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-black text-ink-900 shadow-md flex items-center gap-1.5 border border-amber-200">
-                      <span className="text-base">🏆</span>
-                      <span>Exhibition Best Seller</span>
+                      <span>{activeHero.badge}</span>
                     </div>
 
                     <div className="absolute top-3 right-3 bg-emerald-600 text-white px-2.5 py-1 rounded-full text-[10px] font-black shadow-md flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                      <span>In Stock</span>
+                      <span>{activeHero.price} • In Stock</span>
                     </div>
+
+                    {/* Prev / Next Navigation Arrows */}
+                    <button
+                      onClick={prevSlide}
+                      aria-label="Previous Slide"
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition shadow-md opacity-80 hover:opacity-100 hover:scale-110"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={nextSlide}
+                      aria-label="Next Slide"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition shadow-md opacity-80 hover:opacity-100 hover:scale-110"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
 
                     {/* Bottom Image Info */}
-                    <div className="absolute bottom-3 left-3 right-3 text-white">
+                    <div className="absolute bottom-3 left-3 right-3 text-white pointer-events-none">
                       <div className="text-[11px] font-extrabold uppercase tracking-wider text-bee-300">
-                        Class 6–10 Physics • Working Model
+                        {activeHero.subject} • {activeHero.tag}
                       </div>
                       <div className="text-base font-black truncate">
-                        Working Hydraulic Lift & Pascal's Law Model
+                        {activeHero.title}
                       </div>
                     </div>
                   </div>
 
-                  {/* Micro Specs strip */}
-                  <div className="grid grid-cols-3 gap-2 text-center text-[11px]">
-                    <div className="bg-amber-50 p-2 rounded-xl border border-amber-100">
-                      <span className="font-extrabold text-ink-900 block">100% Tested</span>
-                      <span className="text-[10px] text-slate-500">Zero Assembly</span>
+                  {/* 5-IMAGE THUMBNAIL SELECTOR STRIP */}
+                  <div className="space-y-1.5 pt-0.5">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-extrabold text-slate-700 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-bee-600" />
+                        <span>Featured Working Models ({HERO_SLIDES.length} Exhibits):</span>
+                      </span>
+                      <div className="flex gap-1 items-center">
+                        {HERO_SLIDES.map((_, idx) => (
+                          <span
+                            key={idx}
+                            onClick={() => setCurrentSlide(idx)}
+                            className={`h-1.5 rounded-full cursor-pointer transition-all ${
+                              currentSlide === idx ? 'w-5 bg-bee-500' : 'w-1.5 bg-slate-300 hover:bg-slate-400'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div className="bg-emerald-50 p-2 rounded-xl border border-emerald-100">
-                      <span className="font-extrabold text-emerald-800 block">Free Viva Card</span>
-                      <span className="text-[10px] text-emerald-600">Q&A Included</span>
-                    </div>
-                    <div className="bg-blue-50 p-2 rounded-xl border border-blue-100">
-                      <span className="font-extrabold text-blue-800 block">Fast COD</span>
-                      <span className="text-[10px] text-blue-600">All India</span>
+
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {HERO_SLIDES.map((slide, idx) => {
+                        const isCurrent = currentSlide === idx;
+                        return (
+                          <button
+                            key={slide.id}
+                            onClick={() => setCurrentSlide(idx)}
+                            className={`group relative rounded-xl overflow-hidden border-2 transition-all p-0.5 flex flex-col items-center text-center ${
+                              isCurrent
+                                ? 'border-bee-500 shadow-md scale-105 bg-bee-50 ring-2 ring-bee-400/50'
+                                : 'border-slate-200 hover:border-bee-300 bg-white hover:scale-102 opacity-75 hover:opacity-100'
+                            }`}
+                          >
+                            <div className="h-10 w-full rounded-lg overflow-hidden bg-slate-100 relative">
+                              <img
+                                src={slide.imageUrl}
+                                alt={slide.thumbLabel}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <span className={`text-[9px] font-bold truncate w-full px-0.5 pt-0.5 leading-tight ${
+                              isCurrent ? 'text-ink-900 font-extrabold' : 'text-slate-500'
+                            }`}>
+                              {slide.thumbLabel}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* Callout Footer */}
-                  <div className="pt-1 flex items-center justify-between text-xs">
+                  {/* Callout Action Footer */}
+                  <div className="pt-1 flex items-center justify-between text-xs border-t border-slate-100">
                     <div className="flex items-center gap-2 text-slate-600">
                       <div className="flex -space-x-1.5">
                         <span className="inline-flex items-center justify-center h-6 w-6 rounded-full ring-2 ring-white bg-bee-400 text-[10px] font-bold text-ink-900">A</span>
@@ -169,17 +299,17 @@ export default function HomePage() {
                       <span className="text-[11px] font-semibold text-slate-600">520+ verified parent reviews</span>
                     </div>
                     <Link
-                      href="/products/working-hydraulic-lift-model"
+                      href={`/products/${activeHero.slug}`}
                       className="font-extrabold text-bee-700 hover:text-bee-800 text-xs flex items-center gap-1 bg-bee-50 hover:bg-bee-100 px-3 py-1.5 rounded-xl border border-bee-200 transition"
                     >
-                      <span>Explore</span>
+                      <span>Explore Model</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
                 </div>
 
                 {/* Floating Decorative Badges */}
-                <div className="hidden sm:flex absolute -bottom-3 -left-3 bg-white/95 backdrop-blur-md p-2.5 px-3.5 rounded-2xl shadow-xl border border-slate-200 items-center gap-2.5">
+                <div className="hidden sm:flex absolute -bottom-3 -left-3 bg-white/95 backdrop-blur-md p-2.5 px-3.5 rounded-2xl shadow-xl border border-slate-200 items-center gap-2.5 z-20">
                   <div className="w-7 h-7 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
                     ✓
                   </div>
@@ -189,7 +319,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="hidden sm:flex absolute -top-3 -right-3 bg-white/95 backdrop-blur-md p-2 px-3 rounded-2xl shadow-xl border border-slate-200 items-center gap-2">
+                <div className="hidden sm:flex absolute -top-3 -right-3 bg-white/95 backdrop-blur-md p-2 px-3 rounded-2xl shadow-xl border border-slate-200 items-center gap-2 z-20">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                   <span className="text-[11px] font-bold text-slate-700">Same-Day Dispatch Ready</span>
                 </div>

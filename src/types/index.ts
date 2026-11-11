@@ -102,6 +102,7 @@ export interface Product {
   
   isFeatured?: boolean;
   isPopular?: boolean;
+  isBestSeller?: boolean;
   requiresAssembly: boolean;
   estimatedAssemblyMins?: number;
   

@@ -76,9 +76,9 @@ export default function CheckoutPage() {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const orderNumber = `PB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${randomSuffix}`;
 
-    const newOrder = createOrder({
+    const orderPayload = {
       orderNumber,
-      status: 'confirmed',
+      status: 'confirmed' as const,
       parentName,
       parentPhone,
       parentWhatsapp,
@@ -106,7 +106,20 @@ export default function CheckoutPage() {
       shippingFeePaise,
       totalPayablePaise,
       verifiedAt: new Date().toISOString(),
-    });
+    };
+
+    // Save to local store
+    const newOrder = createOrder(orderPayload);
+
+    // Sync with backend API and database in background
+    fetch('/api/v1/checkout/cod/verify-and-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...orderPayload,
+        otp: otpCode,
+      }),
+    }).catch(() => {});
 
     clearCart();
     setIsSubmitting(false);

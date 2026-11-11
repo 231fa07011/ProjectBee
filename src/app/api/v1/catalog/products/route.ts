@@ -1,47 +1,29 @@
 import { NextResponse } from 'next/server';
-import { PRODUCTS } from '@/lib/data/catalog';
+import { getProducts } from '@/lib/db';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const q = searchParams.get('q')?.toLowerCase().trim();
-  const board = searchParams.get('board');
-  const grade = searchParams.get('grade') ? Number(searchParams.get('grade')) : null;
-  const subject = searchParams.get('subject');
-  const format = searchParams.get('format');
+  const q = searchParams.get('q') || undefined;
+  const board = searchParams.get('board') || undefined;
+  const grade = searchParams.get('grade') ? Number(searchParams.get('grade')) : undefined;
+  const subject = searchParams.get('subject') || undefined;
+  const format = searchParams.get('format') || undefined;
+  const isBestSeller = searchParams.get('bestSeller') === 'true' ? true : undefined;
 
-  let results = [...PRODUCTS];
-
-  if (q) {
-    results = results.filter(
-      (p) =>
-        p.title.toLowerCase().includes(q) ||
-        p.shortDescription.toLowerCase().includes(q) ||
-        p.subjects.some((s) => s.toLowerCase().includes(q))
-    );
-  }
-
-  if (board) {
-    results = results.filter((p) => p.boards.includes(board as any));
-  }
-
-  if (grade !== null) {
-    results = results.filter((p) => p.classes.includes(grade));
-  }
-
-  if (subject) {
-    results = results.filter((p) => p.subjects.includes(subject));
-  }
-
-  if (format) {
-    results = results.filter((p) => p.formatId === format);
-  }
+  const products = await getProducts({
+    query: q,
+    board,
+    grade,
+    subject,
+    format,
+    isBestSeller,
+  });
 
   return NextResponse.json({
     success: true,
     data: {
-      products: results,
-      total: results.length,
+      products,
+      total: products.length,
     },
   });
 }
-

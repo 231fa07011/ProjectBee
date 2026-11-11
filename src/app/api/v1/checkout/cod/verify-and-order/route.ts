@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
+import { createOrder } from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { parentName, parentWhatsapp, otp } = body;
+    const { parentName, parentWhatsapp, otp, items, shippingAddress, studentName, studentClass, totalPayablePaise } = body;
 
     if (!parentName || !parentWhatsapp) {
       return NextResponse.json(
@@ -33,12 +34,26 @@ export async function POST(request: Request) {
 
     const orderNumber = `PB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+    const savedOrder = await createOrder({
+      orderNumber,
+      parentName,
+      parentWhatsapp,
+      parentPhone: parentWhatsapp,
+      studentName,
+      studentClass,
+      shippingAddress,
+      items: items || [],
+      totalPayablePaise: totalPayablePaise || 0,
+      status: 'confirmed',
+    });
+
     return NextResponse.json({
       success: true,
       data: {
-        orderNumber,
-        status: 'confirmed',
+        orderNumber: savedOrder.orderNumber,
+        status: savedOrder.status,
         paymentMethod: 'cod',
+        order: savedOrder,
         message: 'Order verified and confirmed successfully.',
       },
     });
@@ -52,4 +67,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

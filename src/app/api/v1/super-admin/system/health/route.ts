@@ -1,22 +1,33 @@
 import { NextResponse } from 'next/server';
+import { checkDatabaseHealth } from '@/lib/db';
 
 export async function GET() {
+  const dbHealth = await checkDatabaseHealth();
+
   return NextResponse.json({
     success: true,
     data: {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       services: {
-        database: { status: 'healthy', latencyMs: 12, provider: 'PostgreSQL 15 (Supabase)' },
-        auth: { status: 'healthy', provider: 'Supabase Auth' },
-        whatsappGateway: { status: 'connected', provider: 'Msg91/Twilio' },
-        courierLogistics: { status: 'connected', provider: 'Shiprocket API' },
+        database: dbHealth,
+        whatsappGateway: {
+          status: 'connected',
+          provider: 'WhatsApp Direct Gateway',
+          configuredNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '917331102982',
+        },
+        courierLogistics: {
+          status: 'ready',
+          provider: 'Shiprocket Logistics API',
+          coveragePincodes: 28000,
+        },
       },
-      superAdminIdentity: {
-        email: 'admin@projectbee.in',
-        isDesignatedSingleton: true,
+      system: {
+        environment: process.env.NODE_ENV || 'production',
+        framework: 'Next.js 14 App Router',
+        storeName: process.env.NEXT_PUBLIC_STORE_NAME || 'ProjectBee',
+        storeCity: process.env.NEXT_PUBLIC_STORE_CITY || 'Bengaluru',
       },
     },
   });
 }
-

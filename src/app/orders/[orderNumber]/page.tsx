@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   CheckCircle2, 
@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   MessageSquare
 } from 'lucide-react';
+import { Order } from '@/types';
 import { useOrders } from '@/lib/store/orderStore';
 import { REVIEWS } from '@/lib/data/reviews';
 import { getOrderConfirmationWhatsAppUrl } from '@/lib/config';
@@ -26,7 +27,26 @@ interface OrderConfirmationPageProps {
 export default function OrderConfirmationPage({ params }: OrderConfirmationPageProps) {
   const { orderNumber } = params;
   const { getOrder } = useOrders();
-  const order = getOrder(orderNumber);
+  const localOrder = getOrder(orderNumber);
+
+  const [fetchedOrder, setFetchedOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(!localOrder);
+
+  useEffect(() => {
+    if (!localOrder) {
+      fetch(`/api/v1/orders/${orderNumber}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.data?.order) {
+            setFetchedOrder(data.data.order);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }
+  }, [localOrder, orderNumber]);
+
+  const order = localOrder || fetchedOrder;
 
   // Review modal state
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -34,6 +54,15 @@ export default function OrderConfirmationPage({ params }: OrderConfirmationPageP
   const [reviewTitle, setReviewTitle] = useState('');
   const [reviewText, setReviewText] = useState('');
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-20 text-center max-w-md">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bee-600 mx-auto mb-4" />
+        <p className="text-sm text-slate-600">Retrieving order details...</p>
+      </div>
+    );
+  }
 
   if (!order) {
     return (
@@ -72,7 +101,7 @@ export default function OrderConfirmationPage({ params }: OrderConfirmationPageP
   const currentStepIdx = getStepIndex(order.status);
 
   const handleWhatsAppOrderPing = () => {
-    const itemNames = order.items.map((i) => `${i.quantity}x ${i.titleSnapshot}`).join(', ');
+    const itemNames = order.items.map((i: any) => `${i.quantity}x ${i.titleSnapshot}`).join(', ');
     const url = getOrderConfirmationWhatsAppUrl(
       order.orderNumber,
       order.parentName,
@@ -82,21 +111,25 @@ export default function OrderConfirmationPage({ params }: OrderConfirmationPageP
     window.open(url, '_blank');
   };
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewText.trim()) return;
 
-    REVIEWS.unshift({
-      id: `rev-${Date.now()}`,
+    const payload = {
       productId: order.items[0]?.productId || 'prod-001',
       rating,
       title: reviewTitle || 'Excellent exhibition model',
       reviewText,
       reviewerDisplayName: `${order.parentName}, Class ${order.studentClass || 7} Parent`,
-      isVerifiedPurchase: true,
-      helpfulVotesCount: 0,
-      createdAt: new Date().toISOString(),
-    });
+    };
+
+    try {
+      await fetch('/api/v1/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch {}
 
     setReviewSubmitted(true);
     setTimeout(() => {

@@ -23,6 +23,7 @@ test('Indian WhatsApp phone number regex validation', () => {
   const indianMobileRegex = /^[6-9]\d{9}$/;
   assert.strictEqual(indianMobileRegex.test('9876543210'), true);
   assert.strictEqual(indianMobileRegex.test('8884012345'), true);
+  assert.strictEqual(indianMobileRegex.test('7331102982'), true);
   assert.strictEqual(indianMobileRegex.test('1234567890'), false);
   assert.strictEqual(indianMobileRegex.test('98765'), false);
 });
@@ -76,4 +77,11 @@ test('Order Number formatting PB-YYYYMMDD-XXXX', () => {
   const orderNumber = 'PB-20261109-4082';
   const orderRegex = /^PB-\d{8}-\d{4}$/;
   assert.strictEqual(orderRegex.test(orderNumber), true);
+});
+
+test('Supabase URL encoding for special characters in database password', () => {
+  const rawPassword = 'C@5&%WJdq+ELiq8';
+  const encoded = encodeURIComponent(rawPassword);
+  assert.strictEqual(encoded, 'C%405%26%25WJdq%2BELiq8');
+  assert.strictEqual(decodeURIComponent(encoded), rawPassword);
 });
